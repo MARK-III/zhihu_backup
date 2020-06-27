@@ -176,20 +176,16 @@ print 'zhihu archive start ...'
 archive_dir = 'archive'
 
 #sync following list
-if not os.path.exists(archive_dir):
-    print 'new node, create archive folder'
-    os.makedirs(archive_dir)
-    print 'sync following list'
-    get_follow_by_author('xjq314')
+json_file = os.path.join(archive_dir, 'index.json')
+if os.path.exists(archive_dir) and os.path.exists(json_file):
+    print 'following list exists'
+    pass
 else:
-    json_file = os.path.join(archive_dir, 'index.json')
-    print json_file
-    if os.path.exists(json_file):
-        print 'following list exists'
-        pass
-    else:
-        print 'sync following list'
-        get_follow_by_author('xjq314')
+    if not os.path.exists(archive_dir):
+        print 'new node, create archive folder'
+        os.makedirs(archive_dir)
+    print 'sync following list'
+    utils.get_follow_by_author(archive_dir, 'xjq314', cookie)
 
 #sync answer by author
 author_folders = os.listdir(archive_dir)

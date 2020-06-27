@@ -59,6 +59,50 @@ def get_answers_by_author(archive_dir, author, cookie):
     answer_dict['answers'] = answers
     _json_to_file(answer_dict, json_file)
 
+def get_follow_by_author(archive_dir, author, cookie):
+    print 'get all follow of: ' + author
+    headers = _header(cookie)
+    follow_dict = {}
+    followees = []
+    if not os.path.exists(archive_dir):
+        os.makedirs(archive_dir)
+    json_file = os.path.join(archive_dir, 'index.json')
+    drained = False
+    base_url = 'https://www.zhihu.com/api/v4/members/'
+    url = base_url + author + '/followees'
+    offset = 0
+    while not drained:
+        print 'get followee from: ' + str(offset)
+        params = {
+            'offset': offset,
+            'limit': 20,
+            'include': 'data[*].answer_count,articles_count,gender,follower_count,is_followed,is_following,badge[?(type=best_answerer)].topics'
+            }
+        try:
+            response =requests.get(url, headers=headers, params=params)
+        except:
+            print('anti spider, wait for 30 seconds and try again')
+            time.sleep(30)
+            continue
+        html = response.text
+        dict_json = json.loads(html)
+        drained = dict_json['paging']['is_end']   
+        follow_dict['follower_id'] = author
+        for f in dict_json['data']:
+            p = {}
+            p['uuid'] = f['id']
+            p['name'] = f['name']
+            p['id'] = f['url_token']
+            pfolder = os.path.join(archive_dir , p['id'])
+            if not os.path.exists(pfolder):
+                os.makedirs(pfolder)
+            followees.append(p)
+        offset = offset + 20
+        time.sleep(2)
+    print 'total followees: ' + str(len(followees))
+    follow_dict['followee'] = followees
+    _json_to_file(follow_dict, json_file)
+
 
 def _html_to_json(html):
     #extract json from html working from 2020.06.28
@@ -87,4 +131,5 @@ def send_api_request(url, headers, params):
     html = response.text
     dict_json = json.loads(html)
     return dict_json
+
 
