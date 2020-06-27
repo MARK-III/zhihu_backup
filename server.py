@@ -34,6 +34,27 @@ def people_answer_page(people, answer_id):
         answer = f.read()
     return answer
 
+@app.route('/<people>/collection')
+def people_collection_index(people):
+    index_file = os.path.join(archive_dir, people, 'collections', 'index.json')
+    with open(index_file) as f:
+        collection_dict = json.loads(f.read())
+    return collection_dict
+
+@app.route('/<people>/collection/<collection_id>')
+def people_collection_answer_index(people, collection_id):
+    index_file = os.path.join(archive_dir, people, 'collections', collection_id, 'index.json')
+    with open(index_file) as f:
+        answer_dict = json.loads(f.read())
+    return answer_dict
+
+@app.route('/<people>/collection/<collection_id>/<answer_id>')
+def people_collection_answer_index(people, collection_id, answer_id):
+    answer_file = os.path.join(archive_dir, people, 'collections', collection_id, answer_id + 'txt')
+    with open(answer_file) as f:
+        answer = f.read()
+    return answer
+
 
 if __name__ == '__main__':
     app.debug = True
