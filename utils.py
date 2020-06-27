@@ -10,8 +10,9 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-def get_answers_by_author(archive_dir, author):
+def get_answers_by_author(archive_dir, author, cookie):
     print 'get all answers of: ' + author
+    headers = _header(cookie)
     answer_dict = {}
     answers = []
     answer_folder = os.path.join(archive_dir, author, 'answer')
@@ -32,15 +33,12 @@ def get_answers_by_author(archive_dir, author):
         except:
             print('anti spider, wait for 30 seconds and try again')
             time.sleep(30)
+            continue
         html = response.text
-        soup = BeautifulSoup(html, 'html.parser')
-        tag = soup.find(attrs={'id': 'js-initialData'}) #get json tag
-        text_json = str(tag).strip('<script id="js-initialData" type="text/json">').strip('</script>') #get json content
-        dict_json = json.loads(text_json)
+        dict_json = _html_to_json(html)
         drained = dict_json['initialState']['people']['answersByUser'][author]['isDrained']        
         answer_dict['author_id'] = author        
         answer_list = dict_json['initialState']['entities']['answers']
-
         for id in answer_list:
             d = {}
             d['id'] = id
@@ -59,11 +57,29 @@ def get_answers_by_author(archive_dir, author):
         time.sleep(2)
     print 'total answers: ' + str(len(answers))
     answer_dict['answers'] = answers
-    with open(json_file, 'w') as json_f:
-        json_f.write(json.dumps(answer_dict))
+    _json_to_file(answer_dict, json_file)
+
+
+def _html_to_json(html):
+    #extract json from html working from 2020.06.28
+    soup = BeautifulSoup(html, 'html.parser')
+    tag = soup.find(attrs={'id': 'js-initialData'}) #get json tag
+    text_json = str(tag).strip('<script id="js-initialData" type="text/json">').strip('</script>') #get json content
+    j = json.loads(text_json)
+    return j
+
+def _header(cookie):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
+        'referer': 'https://www.zhihu.com',
+        'cookie': cookie
+        }
+    return headers
+
+def _json_to_file(j, f):
+    with open(f, 'w')as json_f:
+        json_f.write(json.dumps(j))
     json_f.close()
-
-
 
 
 def send_api_request(url, headers, params):
