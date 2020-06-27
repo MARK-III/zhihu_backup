@@ -119,49 +119,6 @@ def get_answers_by_collection(c_id, author):
         json_f.write(json.dumps(answer_dict))
     json_f.close()
 
-def get_follow_by_author(author):
-    print 'get all follow of: ' + author
-    follow_dict = {}
-    followees = []
-    if not os.path.exists(archive_dir):
-        os.makedirs(archive_dir)
-    json_file = os.path.join(archive_dir, 'index.json')
-    drained = False
-    base_url = 'https://www.zhihu.com/api/v4/members/'
-    url = base_url + author + '/followees'
-    offset = 0
-    while not drained:
-        print 'get followee from: ' + str(offset)
-        params = {
-            'offset': offset,
-            'limit': 20,
-            'include': 'data[*].answer_count,articles_count,gender,follower_count,is_followed,is_following,badge[?(type=best_answerer)].topics'
-            }
-        dict_json = utils.send_api_request(url, headers, params)
-        drained = dict_json['paging']['is_end']   
-        follow_dict['follower_id'] = author
-
-        for f in dict_json['data']:
-            p = {}
-            p['uuid'] = f['id']
-            p['name'] = f['name']
-            p['id'] = f['url_token']
-
-            pfolder = os.path.join(archive_dir , p['id'])
-            if not os.path.exists(pfolder):
-                os.makedirs(pfolder)
-            followees.append(p)
-        offset = offset + 20
-        time.sleep(2)
-    print 'total followees: ' + str(len(followees))
-    follow_dict['followee'] = followees
-    with open(json_file, 'w') as json_f:
-        json_f.write(json.dumps(follow_dict))
-    json_f.close()
-    #for author in followees:
-    #    get_answers_by_author(author['id'])
-    #    get_collections_by_author(author['id'])
-
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
     #'referer': 'https://www.zhihu.com/people/mcbig/answers?page=1',

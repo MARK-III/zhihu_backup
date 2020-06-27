@@ -126,10 +126,4 @@ def _json_to_file(j, f):
     json_f.close()
 
 
-def send_api_request(url, headers, params):
-    response =requests.get(url, headers=headers, params=params)
-    html = response.text
-    dict_json = json.loads(html)
-    return dict_json
-
 
