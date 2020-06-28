@@ -205,6 +205,64 @@ def get_collections_by_author2(archive_dir, author, cookie):
     collections_dict['collections'] = collections
     _json_to_file(collections_dict, json_file)
 
+def get_answers_by_collection(archive_dir, c_id, author, cookie):
+    print 'get all answers of collection: ' + c_id
+    headers = _header(cookie)
+    answer_dict = {}
+    answers = []
+    answer_folder = os.path.join(archive_dir, author, 'collections', c_id)
+    if not os.path.exists(answer_folder):
+        os.makedirs(answer_folder)
+    json_file = os.path.join(answer_folder, 'index.json')
+    drained = False
+    base_url = 'https://www.zhihu.com/api/v4/favlists/'
+    url = base_url + c_id + '/items'
+    offset = 0
+    while not drained:
+        print 'get answers from: ' + str(offset)
+        params = {
+            'offset': offset,
+            'limit': 20,
+            'include': 'data[*].created,content.comment_count,suggest_edit,is_normal,thumbnail_extra_info,thumbnail,description,content,voteup_count,created,updated,upvoted_followees,voting,review_info,is_labeled,label_info,relationship.is_authorized,voting,is_author,is_thanked,is_nothelp,is_recognized;data[*].author.badge[?(type=best_answerer)].topics'
+        }
+        try:
+            response =requests.get(url, headers=headers, params=params)
+        except:
+            print('anti spider, wait for 30 seconds and try again')
+            time.sleep(30)
+            continue
+        html = response.text
+        dict_json = json.loads(html)
+        drained = dict_json['paging']['is_end']   
+        answer_dict['collector_id'] = author
+        for a in dict_json['data']:
+            d = {}
+            d['id'] = a['content']['id']
+            d['author'] = a['content']['author']['url_token']
+            try:
+                if 'question' in a['content'].keys():
+                    d['title'] = a['content']['question']['title']
+                else:
+                    d['title'] = a['content']['title']
+                if 'content' in a['content'].keys():
+                    d['content'] = a['content']['content']
+                else:
+                    d['content'] = a['content']['url']   #corner case when content is video
+            except:
+                print 'failed'
+                continue
+            fname = str(d['id']) + '.txt'
+            f = os.path.join(answer_folder, fname)
+            with open(f, 'w') as txt_file:
+                txt_file.write(d['content'])
+            txt_file.close()
+            answers.append(d)
+        offset = offset + 20
+        time.sleep(2)
+    print 'total answers: ' + str(len(answers))
+    answer_dict['answers'] = answers
+    _json_to_file(answer_dict, json_file)
+
 def _html_to_json(html):
     #extract json from html working from 2020.06.28
     soup = BeautifulSoup(html, 'html.parser')
