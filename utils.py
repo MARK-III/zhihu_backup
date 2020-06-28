@@ -103,6 +103,107 @@ def get_follow_by_author(archive_dir, author, cookie):
     follow_dict['followee'] = followees
     _json_to_file(follow_dict, json_file)
 
+def get_collections_by_author(archive_dir, author, cookie):
+    print 'get all collections of: ' + author
+    headers = _header(cookie)
+    collections_dict = {}
+    collections = []
+    collections_folder = os.path.join(archive_dir, author, 'collections')
+    if not os.path.exists(collections_folder):
+        os.makedirs(collections_folder)
+    json_file = os.path.join(collections_folder, 'index.json')
+    drained = False
+    base_url = 'https://zhihu.com/people/'
+    url = base_url + author + '/collections'
+    page = 1
+    while not drained:
+        print 'get page: ' + str(page)
+        params = {
+            'page': page
+        }
+        try:
+            response =requests.get(url, headers=headers, params=params)
+        except:
+            print('anti spider, wait for 30 seconds and try again')
+            time.sleep(30)
+            continue
+        html = response.text
+        #print html
+        dict_json = _html_to_json(html)
+        drained = dict_json['initialState']['people']['favlistsByUser'][author]['isDrained']
+        total = dict_json['initialState']['people']['favlistsByUser'][author]['totals']
+        collections_dict['author_id'] = author 
+        flavor_list = dict_json['initialState']['entities']['favlists']
+        for id in flavor_list:
+            d = {}
+            d['id'] = id
+            d['answerCount'] = flavor_list[id]['answerCount']
+            d['title'] = flavor_list[id]['title']
+            d['createdTime'] = flavor_list[id]['createdTime']
+            d['updatedTime'] = flavor_list[id]['updatedTime']
+            collection_folder = os.path.join(collections_folder, id)
+            if not os.path.exists(collection_folder):
+                os.makedirs(collection_folder)
+            collections.append(d)
+        if len(collections) >= total:
+            drained = True
+        page = page + 1
+        time.sleep(2)
+    collections_dict['collections'] = collections
+    _json_to_file(collections_dict, json_file)
+
+def get_collections_by_author2(archive_dir, author, cookie):
+    print 'get all collections of: ' + author
+    headers = _header(cookie)
+    collections_dict = {}
+    collections = []
+    collections_folder = os.path.join(archive_dir, author, 'collections')
+    if not os.path.exists(collections_folder):
+        os.makedirs(collections_folder)
+    json_file = os.path.join(collections_folder, 'index.json')
+    drained = False
+    base_url = 'https://www.zhihu.com/api/v4/members/'
+    url = base_url + author + '/favlists'
+    offset = 0
+    while not drained:
+        print 'get collection from: ' + str(offset)
+        params = {
+            'offset': offset,
+            'limit': 20,
+            'include': 'data[*].updated_time,answer_count,follower_count,creator,description,is_following,comment_count,created_time'
+        }
+        try:
+            response =requests.get(url, headers=headers, params=params)
+        except:
+            print('anti spider, wait for 30 seconds and try again')
+            time.sleep(30)
+            continue
+        html = response.text
+        print html
+        dict_json = json.loads(html)
+        drained = dict_json['paging']['is_end']  
+        if drained:
+            print 'drained'
+        else:
+            print 'not drained'
+        collections_dict['author_id'] = author 
+        flavor_list = dict_json['data']
+        for id in flavor_list:
+            d = {}
+            d['url'] = id['url']
+            d['id'] = id['id']
+            d['answerCount'] = id['answerCount']
+            d['title'] = id['title']
+            d['createdTime'] = id['createdTime']
+            d['updatedTime'] = id['updatedTime']
+            collection_folder = os.path.join(collections_folder, d['id'])
+            if not os.path.exists(collection_folder):
+                os.makedirs(collection_folder)
+            collections.append(d)
+        page = page + 1
+        time.sleep(2)
+    collections_dict['collections'] = collections
+    _json_to_file(collections_dict, json_file)
 
 def _html_to_json(html):
     #extract json from html working from 2020.06.28

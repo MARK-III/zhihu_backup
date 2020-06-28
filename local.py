@@ -11,55 +11,6 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 import utils
 
-    
-def get_collections_by_author(author):
-    print 'get all collections of: ' + author
-    collections_dict = {}
-    collections = []
-    collections_folder = os.path.join(archive_dir, author, 'collections')
-    if not os.path.exists(collections_folder):
-        os.makedirs(collections_folder)
-    json_file = os.path.join(collections_folder, 'index.json')
-    drained = False
-    base_url = 'https://zhihu.com/people/'
-    url = base_url + author + '/collections'
-    page = 1
-    while not drained:
-        print 'get page: ' + str(page)
-        try:
-            response =requests.get(url, headers=headers)
-        except:
-            print('anti spider, wait for 30 seconds and try again')
-            time.sleep(30)
-        html = response.text
-        soup = BeautifulSoup(html, 'html.parser')
-        tag = soup.find(attrs={'id': 'js-initialData'}) #get json tag
-        text_json = str(tag).strip('<script id="js-initialData" type="text/json">').strip('</script>') #get json content
-        dict_json = json.loads(text_json)
-        drained = dict_json['initialState']['people']['favlistsByUser'][author]['isDrained']
-        collections_dict['author_id'] = author 
-        flavor_list = dict_json['initialState']['entities']['favlists']
-        for id in flavor_list:
-            d = {}
-            d['id'] = id
-            d['answerCount'] = flavor_list[id]['answerCount']
-            d['title'] = flavor_list[id]['title']
-            d['createdTime'] = flavor_list[id]['createdTime']
-            d['updatedTime'] = flavor_list[id]['updatedTime']
-            
-            collection_folder = os.path.join(collections_folder, id)
-            if not os.path.exists(collection_folder):
-                os.makedirs(collection_folder)
-            collections.append(d)
-        page = page + 1
-        time.sleep(2)
-    collections_dict['collections'] = collections
-
-    with open(json_file, 'w') as json_f:
-        json_f.write(json.dumps(collections_dict))
-    json_f.close
-    #for c in collections:
-    #    get_answers_by_collection(str(c['id']), author)
 
 def get_answers_by_collection(c_id, author):
     print 'get all answers of collection: ' + c_id
@@ -166,15 +117,12 @@ for f in author_folders:
     if f != 'index.json':
         print 'dealing with author: ' + f
         collection_folder = os.path.join(archive_dir, f, 'collections')
-        if os.path.exists(collection_folder):
-            json_file = os.path.join(collection_folder, 'index.json')
-            if os.path.exists(json_file):
-                print 'collection list exists'
-            else:
-                print 'sync collection of author: ' + f
-                get_collections_by_author(f)
+        json_file = os.path.join(collection_folder, 'index.json')
+        if os.path.exists(collection_folder) and os.path.exists(json_file):
+            print 'collection list exists'
         else:
-            print 'new followee, create collection folder'
-            os.makedirs(collection_folder)
+            if not os.path.exists(collection_folder):
+                print 'new followee, create collection folder'
+                os.makedirs(collection_folder)
             print 'sync collection of author: ' + f
-            get_collections_by_author(f)
+            utils.get_collections_by_author(archive_dir, f, cookie)
