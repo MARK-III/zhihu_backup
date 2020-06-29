@@ -10,6 +10,9 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+us_request_wait = 1
+us_retry_wait = 20
+
 def get_answers_by_author(archive_dir, author, cookie):
     print 'get all answers of: ' + author
     headers = _header(cookie)
@@ -32,7 +35,7 @@ def get_answers_by_author(archive_dir, author, cookie):
             response =requests.get(url, headers=headers, params=params)
         except:
             print('anti spider, wait for 30 seconds and try again')
-            time.sleep(30)
+            time.sleep(us_retry_wait)
             continue
         html = response.text
         dict_json = _html_to_json(html)
@@ -54,7 +57,7 @@ def get_answers_by_author(archive_dir, author, cookie):
             txt_file.close()
             answers.append(d)
         page = page + 1
-        time.sleep(2)
+        time.sleep(us_request_wait)
     print 'total answers: ' + str(len(answers))
     answer_dict['answers'] = answers
     _json_to_file(answer_dict, json_file)
@@ -82,7 +85,7 @@ def get_follow_by_author(archive_dir, author, cookie):
             response =requests.get(url, headers=headers, params=params)
         except:
             print('anti spider, wait for 30 seconds and try again')
-            time.sleep(30)
+            time.sleep(us_retry_wait)
             continue
         html = response.text
         dict_json = json.loads(html)
@@ -98,7 +101,7 @@ def get_follow_by_author(archive_dir, author, cookie):
                 os.makedirs(pfolder)
             followees.append(p)
         offset = offset + 20
-        time.sleep(2)
+        time.sleep(us_request_wait)
     print 'total followees: ' + str(len(followees))
     follow_dict['followee'] = followees
     _json_to_file(follow_dict, json_file)
@@ -125,7 +128,7 @@ def get_collections_by_author(archive_dir, author, cookie):
             response =requests.get(url, headers=headers, params=params)
         except:
             print('anti spider, wait for 30 seconds and try again')
-            time.sleep(30)
+            time.sleep(us_retry_wait)
             continue
         html = response.text
         #print html
@@ -148,7 +151,7 @@ def get_collections_by_author(archive_dir, author, cookie):
         if len(collections) >= total:
             drained = True
         page = page + 1
-        time.sleep(2)
+        time.sleep(us_request_wait)
     collections_dict['collections'] = collections
     _json_to_file(collections_dict, json_file)
 
@@ -176,7 +179,7 @@ def get_collections_by_author2(archive_dir, author, cookie):
             response =requests.get(url, headers=headers, params=params)
         except:
             print('anti spider, wait for 30 seconds and try again')
-            time.sleep(30)
+            time.sleep(us_retry_wait)
             continue
         html = response.text
         print html
@@ -201,7 +204,7 @@ def get_collections_by_author2(archive_dir, author, cookie):
                 os.makedirs(collection_folder)
             collections.append(d)
         page = page + 1
-        time.sleep(2)
+        time.sleep(us_request_wait)
     collections_dict['collections'] = collections
     _json_to_file(collections_dict, json_file)
 
@@ -229,7 +232,7 @@ def get_answers_by_collection(archive_dir, c_id, author, cookie):
             response =requests.get(url, headers=headers, params=params)
         except:
             print('anti spider, wait for 30 seconds and try again')
-            time.sleep(30)
+            time.sleep(us_retry_wait)
             continue
         html = response.text
         dict_json = json.loads(html)
@@ -258,7 +261,7 @@ def get_answers_by_collection(archive_dir, c_id, author, cookie):
             txt_file.close()
             answers.append(d)
         offset = offset + 20
-        time.sleep(2)
+        time.sleep(us_request_wait)
     print 'total answers: ' + str(len(answers))
     answer_dict['answers'] = answers
     _json_to_file(answer_dict, json_file)
