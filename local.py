@@ -63,6 +63,8 @@ for f in author_folders:
 #sync answers by collection
 author_folders = os.listdir(archive_dir)
 for f in author_folders:
+    if f == 'index.json':
+        continue
     collections_dir = os.path.join(archive_dir, f, 'collections')
     collection_folders = os.listdir(collections_dir)
     if len(collection_folders) <= 1:
