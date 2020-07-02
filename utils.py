@@ -9,102 +9,10 @@ import pprint
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+from zhihu import *
 
-us_request_wait = 1
+us_request_wait = 0
 us_retry_wait = 20
-
-def get_answers_by_author(archive_dir, author, cookie):
-    print 'get all answers of: ' + author
-    headers = _header(cookie)
-    answer_dict = {}
-    answers = []
-    answer_folder = os.path.join(archive_dir, author, 'answer')
-    if not os.path.exists(answer_folder):
-        os.makedirs(answer_folder)
-    json_file = os.path.join(answer_folder, 'index.json')
-    drained = False
-    base_url = 'https://zhihu.com/people/'
-    url = base_url + author + '/answers'
-    page = 1
-    while not drained:
-        print 'get page: ' + str(page)
-        params = {
-            'page': page
-        }
-        try:
-            response =requests.get(url, headers=headers, params=params)
-        except:
-            print('anti spider, wait for 30 seconds and try again')
-            time.sleep(us_retry_wait)
-            continue
-        html = response.text
-        dict_json = _html_to_json(html)
-        drained = dict_json['initialState']['people']['answersByUser'][author]['isDrained']        
-        answer_dict['author_id'] = author        
-        answer_list = dict_json['initialState']['entities']['answers']
-        for id in answer_list:
-            d = {}
-            d['id'] = id
-            d['question_id'] = answer_list[id]['question']['id']
-            d['title'] = answer_list[id]['question']['title']
-            d['content'] = answer_list[id]['content']
-            d['createdTime'] = answer_list[id]['createdTime']
-            d['updatedTime'] = answer_list[id]['updatedTime']
-            fname = id + '.txt'
-            f = os.path.join(answer_folder, fname)
-            with open(f, 'w') as txt_file:
-                txt_file.write(d['content'])
-            txt_file.close()
-            answers.append(d)
-        page = page + 1
-        time.sleep(us_request_wait)
-    print 'total answers: ' + str(len(answers))
-    answer_dict['answers'] = answers
-    _json_to_file(answer_dict, json_file)
-
-def get_follow_by_author(archive_dir, author, cookie):
-    print 'get all follow of: ' + author
-    headers = _header(cookie)
-    follow_dict = {}
-    followees = []
-    if not os.path.exists(archive_dir):
-        os.makedirs(archive_dir)
-    json_file = os.path.join(archive_dir, 'index.json')
-    drained = False
-    base_url = 'https://www.zhihu.com/api/v4/members/'
-    url = base_url + author + '/followees'
-    offset = 0
-    while not drained:
-        print 'get followee from: ' + str(offset)
-        params = {
-            'offset': offset,
-            'limit': 20,
-            'include': 'data[*].answer_count,articles_count,gender,follower_count,is_followed,is_following,badge[?(type=best_answerer)].topics'
-            }
-        try:
-            response =requests.get(url, headers=headers, params=params)
-        except:
-            print('anti spider, wait for 30 seconds and try again')
-            time.sleep(us_retry_wait)
-            continue
-        html = response.text
-        dict_json = json.loads(html)
-        drained = dict_json['paging']['is_end']   
-        follow_dict['follower_id'] = author
-        for f in dict_json['data']:
-            p = {}
-            p['uuid'] = f['id']
-            p['name'] = f['name']
-            p['id'] = f['url_token']
-            pfolder = os.path.join(archive_dir , p['id'])
-            if not os.path.exists(pfolder):
-                os.makedirs(pfolder)
-            followees.append(p)
-        offset = offset + 20
-        time.sleep(us_request_wait)
-    print 'total followees: ' + str(len(followees))
-    follow_dict['followee'] = followees
-    _json_to_file(follow_dict, json_file)
 
 def get_collections_by_author(archive_dir, author, cookie):
     print 'get all collections of: ' + author
@@ -127,7 +35,7 @@ def get_collections_by_author(archive_dir, author, cookie):
         try:
             response =requests.get(url, headers=headers, params=params)
         except:
-            print('anti spider, wait for 30 seconds and try again')
+            print('anti spider, wait for ' + str(us_retry_wait) + ' seconds and try again')
             time.sleep(us_retry_wait)
             continue
         html = response.text
@@ -178,7 +86,7 @@ def get_collections_by_author2(archive_dir, author, cookie):
         try:
             response =requests.get(url, headers=headers, params=params)
         except:
-            print('anti spider, wait for 30 seconds and try again')
+            print('anti spider, wait for ' + str(us_retry_wait) + ' seconds and try again')
             time.sleep(us_retry_wait)
             continue
         html = response.text
@@ -231,7 +139,7 @@ def get_answers_by_collection(archive_dir, c_id, author, cookie):
         try:
             response =requests.get(url, headers=headers, params=params)
         except:
-            print('anti spider, wait for 30 seconds and try again')
+            print('anti spider, wait for ' + str(us_retry_wait) + ' seconds and try again')
             time.sleep(us_retry_wait)
             continue
         html = response.text
@@ -258,7 +166,6 @@ def get_answers_by_collection(archive_dir, c_id, author, cookie):
             f = os.path.join(answer_folder, fname)
             with open(f, 'w') as txt_file:
                 txt_file.write(d['content'])
-            txt_file.close()
             answers.append(d)
         offset = offset + 20
         time.sleep(us_request_wait)
@@ -266,6 +173,78 @@ def get_answers_by_collection(archive_dir, c_id, author, cookie):
     answer_dict['answers'] = answers
     _json_to_file(answer_dict, json_file)
 
+def get_follow_by_author(author, cookie):
+    result = []
+    print 'get all follow of: ' + author
+    headers = _header(cookie)
+    drained = False
+    base_url = 'https://www.zhihu.com/api/v4/members/'
+    url = base_url + author + '/followees'
+    offset = 0
+    while not drained:
+        print 'get followee from: ' + str(offset)
+        params = {
+            'offset': offset,
+            'limit': 20,
+            'include': 'data[*].answer_count,articles_count,gender,follower_count,is_followed,is_following,badge[?(type=best_answerer)].topics'
+            }
+        try:
+            response =requests.get(url, headers=headers, params=params)
+        except:
+            print('anti spider, wait for ' + str(us_retry_wait) + ' seconds and try again')
+            time.sleep(us_retry_wait)
+            continue
+        dict_json = json.loads(response.text)
+        drained = dict_json['paging']['is_end']   
+        for f in dict_json['data']:
+            a = {
+                'uuid': f['id'],
+                'name': f['name'],
+                'id': f['url_token'],
+                'gender': f['gender']
+            }
+            result.append(a)
+        offset = offset + 20
+        time.sleep(us_request_wait)
+    print 'total followees: ' + str(len(result))
+    return result
+
+def get_answers_by_author(author, cookie):
+    print 'get all answers of: ' + author
+    result = []
+    headers = _header(cookie)
+    drained = False
+    base_url = 'https://zhihu.com/people/'
+    url = base_url + author + '/answers'
+    page = 1
+    while not drained:
+        print 'get page: ' + str(page)
+        params = {
+            'page': page
+        }
+        try:
+            response =requests.get(url, headers=headers, params=params, timeout=15)
+        except:
+            print('anti spider, wait for ' + str(us_retry_wait) + ' seconds and try again')
+            time.sleep(us_retry_wait)
+            continue
+        dict_json = _html_to_json(response.text)
+        drained = dict_json['initialState']['people']['answersByUser'][author]['isDrained']              
+        answer_list = dict_json['initialState']['entities']['answers']
+        for id in answer_list.keys():
+            a = {}
+            a['id'] = id
+            a['question_id'] = answer_list[id]['question']['id']
+            a['title'] = answer_list[id]['question']['title']
+            a['createdTime'] = answer_list[id]['createdTime']
+            a['updatedTime'] = answer_list[id]['updatedTime']
+            a['contents'] = answer_list[id]['content']
+            result.append(a)
+        page = page + 1
+        time.sleep(us_request_wait)
+    print 'total answers: ' + str(len(result))
+    return result
+    
 def _html_to_json(html):
     #extract json from html working from 2020.06.28
     soup = BeautifulSoup(html, 'html.parser')
@@ -285,7 +264,22 @@ def _header(cookie):
 def _json_to_file(j, f):
     with open(f, 'w')as json_f:
         json_f.write(json.dumps(j))
-    json_f.close()
+
+def _content_update(text, txt_file):
+    
+    if not os.path.exits(txt_file):
+        with open(txt_file, 'w') as f:
+            f.write(text)
+    else:
+        with open(txt_file, 'r') as f:
+            old_text = f.read()
+        if len(old_text) != len(text):
+            timestamp = time.strftime('%Y%m%d%H%M%S',time.localtime(time.time()))
+            newname = txt_file + '.' + timestamp
+            os.rename(txt_file, newname)
+            with open(txt_file, 'w') as f:
+                f.write(text)
+
 
 
 

@@ -11,7 +11,7 @@ class Zhihu():
     def __init__(self, archive_dir):
         self.archive_dir = archive_dir
         if not os.path.exists(archive_dir):
-            os.makedirs(self.archive_dir)
+            os.makedir(self.archive_dir)
         self.json_file = os.path.join(archive_dir, 'index.json')
         if os.path.exists(self.json_file):
             with open(self.json_file) as f:
@@ -29,32 +29,20 @@ class Zhihu():
             l.append(i)
         return(l)
     
-    def merge_answers(self):
-        for i in self.meta['followees'].keys():
-            index_file = os.path.join(self.archive_dir, i, 'answer', 'index.json')
-            self.meta['followees'][i]['answers'] = dict()
-            try:
-                with open(index_file) as f:
-                    answer_dict = json.loads(f.read())
-            except:
-                del self.meta['followees'][i]
-                continue
-            answer_list = answer_dict['answers']
-            for answer in answer_list:
-                del answer['content']
-                self.meta['followees'][i]['answers'][answer['id']] = answer
-    
     def update(self, a):
+        if a['gender'] >= 0:
+            self.meta['followees'][a['id']] = a
         author_dir = os.path.join(self.archive_dir, a['id'])
         if not os.path.exists(author_dir):
             os.makedirs(author_dir)
-        if a['gender'] >= 0:
-            self.meta['followees'][a['id']] = p
+        self._save()
+    
+    def timestamp(self):
+        return self.meta['timestamp']
 
-    def save(self):
-        timestamp = time.strftime('%Y%m%d%H%M%S',time.localtime(time.time()))
-        newname = self.json_file + '.' + timestamp
-        os.rename(self.json_file, newname)
+    def _save(self):
+        timestamp = int(time.time())
+        self.meta['timestamp'] = timestamp
         with open(self.json_file, 'w') as f:
             f.write(json.dumps(self.meta))
         
@@ -78,9 +66,18 @@ class Author():
             with open(self.json_file) as f:
                 self.meta = json.loads(f.read())
         else:
+            answer_dir = os.path.join(archive_dir, author_id, 'answer')
+            if not os.path.exists(answer_dir):
+                os.mkdir(answer_dir)
             self.meta = {}
+            self.meta['answers'] = {}
+    
+    def timestamp(self):
+        return self.meta['timestamp']
         
-    def save(self):
+    def _save(self):
+        timestamp = int(time.time())
+        self.meta['timestamp'] = timestamp
         with open(self.json_file, 'w') as f:
             f.write(json.dumps(self.meta))
     
@@ -88,6 +85,36 @@ class Author():
         for key in self.meta['answers'].keys():
             print key
     
+    def update(self, a):
+        if not a['id'] in self.meta['answers'].keys():
+            print 'new answer:'
+            print a['title']
+            print a['contents']
+            self._update_answer_file(a['id'], a['contents'])
+            del a['contents']
+            self.meta['answers'][a['id']] = a
+            self._save()
+            return None
+        if a['updatedTime'] > self.meta['answers'][a['id']]['updatedTime']:
+            print 'update answer:'
+            print a['title']
+            print a['contents']
+            self._update_answer_file(a['id'], a['contents'])
+            del a['contents']
+            self.meta['answers'][a['id']] = a
+            self._save()
+            return None
+        return None
+    
+    def _update_answer_file(self, answer_id, text):
+        answer_file = os.path.join(self.archive_dir, self.id, 'answer', answer_id + '.txt')
+        if os.path.exists(answer_file):
+            timestamp = int(time.time())
+            archive_file = os.path.join(self.archive_dir, self.id, 'answer', answer_id + '.txt.' + str(timestamp))
+            os.rename(answer_file, archive_file)
+        with open(answer_file, 'w') as f:
+            f.write(text)
+
     def checksum(self):
         print self.id
         for i in self.meta['answers'].keys():
