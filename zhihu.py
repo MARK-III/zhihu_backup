@@ -248,11 +248,4 @@ class Collection():
                 print self.id
                 print ff
                 self._rebuild_meta(ff)
-    
-    def _rebuild_meta(self, id):
-        a = {}
-        a['id'] = id
-        a['author'] = ''
-        a['title'] = ''
-        self.meta['answers'][id] = a
-        print self.meta['answers'][id]
+                

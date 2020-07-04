@@ -190,22 +190,4 @@ def _header(cookie):
         'cookie': cookie
         }
     return headers
-
-def _json_to_file(j, f):
-    with open(f, 'w')as json_f:
-        json_f.write(json.dumps(j))
-
-def _content_update(text, txt_file):
     
-    if not os.path.exits(txt_file):
-        with open(txt_file, 'w') as f:
-            f.write(text)
-    else:
-        with open(txt_file, 'r') as f:
-            old_text = f.read()
-        if len(old_text) != len(text):
-            timestamp = time.strftime('%Y%m%d%H%M%S',time.localtime(time.time()))
-            newname = txt_file + '.' + timestamp
-            os.rename(txt_file, newname)
-            with open(txt_file, 'w') as f:
-                f.write(text)
