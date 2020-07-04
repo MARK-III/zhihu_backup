@@ -11,17 +11,13 @@ class Zhihu():
     def __init__(self, archive_dir):
         self.archive_dir = archive_dir
         if not os.path.exists(archive_dir):
-            os.makedir(self.archive_dir)
+            os.mkdir(self.archive_dir)
         self.json_file = os.path.join(archive_dir, 'index.json')
         if os.path.exists(self.json_file):
             with open(self.json_file) as f:
                 self.meta = json.loads(f.read())
         else:
             self.meta = {}
-    
-    def list_followees(self):
-        for i in self.meta['followee'].key():
-            print i['name']
 
     def followee_list(self):
         l = []
@@ -34,7 +30,7 @@ class Zhihu():
             self.meta['followees'][a['id']] = a
         author_dir = os.path.join(self.archive_dir, a['id'])
         if not os.path.exists(author_dir):
-            os.makedirs(author_dir)
+            os.makedir(author_dir)
         self._save()
     
     def timestamp(self):
@@ -71,6 +67,7 @@ class Author():
                 os.mkdir(answer_dir)
             self.meta = {}
             self.meta['answers'] = {}
+            self.meta['author_id'] = self.id
     
     def timestamp(self):
         return self.meta['timestamp']
@@ -80,10 +77,6 @@ class Author():
         self.meta['timestamp'] = timestamp
         with open(self.json_file, 'w') as f:
             f.write(json.dumps(self.meta))
-    
-    def answer_ls(self):
-        for key in self.meta['answers'].keys():
-            print key
     
     def update(self, a):
         if not a['id'] in self.meta['answers'].keys():
@@ -128,7 +121,7 @@ class Author():
             if not ff in self.meta['answers'].keys() and ff != 'index.json':
                 print 'meta miss: ' + ff
 
-class Author_c():
+class Author_C():
 
     def __init__(self, archive_dir, author_id):
         self.id = author_id
@@ -138,15 +131,32 @@ class Author_c():
             with open(self.json_file) as f:
                 self.meta = json.loads(f.read())
         else:
+            collections_dir = os.path.join(archive_dir, author_id, 'collections')
+            if not os.path.exists(collections_dir):
+                os.mkdir(collections_dir)
             self.meta = {}
+            self.meta['author_id'] = self.id
+            self.meta['collections'] = {}
     
-    def collection_ls(self):
+    def collection_list(self):
         l = []
         for c in self.meta['collections'].keys():
-            l.append(self.meta['collections'][c])
+            l.append(c)
         return l
+    
+    def update(self, a):
+        self.meta['collections'][a['id']] = a
+        collection_dir = os.path.join(self.archive_dir, self.id, 'collections', a['id'])
+        if not os.path.exists(collection_dir):
+            os.mkdir(collection_dir)
+        self._save()
+    
+    def timestamp(self):
+        return self.meta['timestamp']
         
-    def save(self):
+    def _save(self):
+        timestamp = int(time.time())
+        self.meta['timestamp'] = timestamp
         with open(self.json_file, 'w') as f:
             f.write(json.dumps(self.meta))
 
@@ -167,15 +177,58 @@ class Collection():
         self.author_id = author_id
         self.archive_dir = archive_dir
         self.json_file = os.path.join(archive_dir, author_id, 'collections', c_id, 'index.json')
+        
+        
         if os.path.exists(self.json_file):
             with open(self.json_file) as f:
                 self.meta = json.loads(f.read())
         else:
+            collection_dir = os.path.join(archive_dir, author_id, 'collections', c_id)
+            if not os.path.exists(collection_dir):
+                os.mkdir(collection_dir)
             self.meta = {}
-        
-    def save(self):
+            self.meta['author_id'] = self.id
+            self.meta['answers'] = {}
+            self.meta['timestamp'] = 0
+            self.meta['url'] = ''
+    
+    def update(self, a):
+        if not a['id'] in self.meta['answers'].keys():
+            print 'new answer:'
+            print a['title']
+            self._update_answer_file(a['id'], a['content'])
+            del a['content']
+            self.meta['answers'][a['id']] = a
+            print a
+            self._save()
+            return None
+        if a['updatedTime'] > self.meta['answers'][a['id']]['updatedTime']:
+            print 'update answer:'
+            print a['title']
+            self._update_answer_file(a['id'], a['contents'])
+            del a['contents']
+            self.meta['answers'][a['id']] = a
+            self._save()
+            return None
+        return None
+    
+    def _update_answer_file(self, answer_id, text):
+        answer_file = os.path.join(self.archive_dir, self.author_id, 'collections', self.id, str(answer_id) + '.txt')
+        if os.path.exists(answer_file):
+            timestamp = int(time.time())
+            archive_file = os.path.join(self.archive_dir, self.id, 'answer', answer_id + '.txt.' + str(timestamp))
+            os.rename(answer_file, archive_file)
+        with open(answer_file, 'w') as f:
+            f.write(text)
+
+    def _save(self):
+        timestamp = int(time.time())
+        self.meta['timestamp'] = timestamp
         with open(self.json_file, 'w') as f:
             f.write(json.dumps(self.meta))
+    
+    def timestamp(self):
+        return self.meta['timestamp']
     
     def answer_ls(self):
         for key in self.meta['answers'].keys():
