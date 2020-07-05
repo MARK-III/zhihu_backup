@@ -8,7 +8,7 @@ import pprint
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
-import utilsfrom bs4 import BeautifulSoup
+import utils
 from zhihu import *
 
 me = 'xjq314'
