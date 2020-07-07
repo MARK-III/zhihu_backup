@@ -25,6 +25,15 @@ class Zhihu():
             l.append(i)
         return(l)
     
+    def followee_list_for_frontend(self):
+        l = []
+        for i in self.meta['followees'].keys():
+            d = self.meta['followees'][i]
+            d['answer_url'] = '/people/' + i + '/answer'
+            d['collection_url'] = '/people' + i + '/collecion'
+            l.append(d)
+        return(l)
+    
     def update(self, a):
         if a['gender'] >= 0:
             self.meta['followees'][a['id']] = a
@@ -77,6 +86,14 @@ class Author():
         self.meta['timestamp'] = timestamp
         with open(self.json_file, 'w') as f:
             f.write(json.dumps(self.meta))
+    
+    def answer_list_for_frontend(self):
+        l = []
+        for i in self.meta['answers'].keys():
+            d = self.meta['answers'][i]
+            d['url'] = '/people/' + self.id + '/answer/' + str(i)
+            l.append(d)
+        return(l)
     
     def update(self, a):
         if not a['id'] in self.meta['answers'].keys():
