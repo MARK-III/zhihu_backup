@@ -12,7 +12,7 @@ sys.setdefaultencoding('utf-8')
 from zhihu import *
 
 us_request_wait = 0
-us_retry_wait = 20
+us_retry_wait = 15
 
 def get_follow_by_author(author, cookie):
     result = []
@@ -23,7 +23,7 @@ def get_follow_by_author(author, cookie):
     url = base_url + author + '/followees'
     offset = 0
     while not drained:
-        print 'get followee from: ' + str(offset)
+        print 'get ' + author + '\'s followee offset: ' + str(offset)
         params = {
             'offset': offset,
             'limit': 20,
@@ -32,7 +32,7 @@ def get_follow_by_author(author, cookie):
         try:
             response =requests.get(url, headers=headers, params=params)
         except:
-            print('anti spider, wait for ' + str(us_retry_wait) + ' seconds and try again')
+            print('network error, wait for ' + str(us_retry_wait) + ' seconds and try again')
             time.sleep(us_retry_wait)
             continue
         dict_json = json.loads(response.text)
@@ -51,7 +51,7 @@ def get_follow_by_author(author, cookie):
     return result
 
 def get_answers_by_author(author, cookie):
-    print 'get all answers of: ' + author
+    print 'get all answers: ' + author
     result = []
     headers = _header(cookie)
     drained = False
@@ -59,14 +59,14 @@ def get_answers_by_author(author, cookie):
     url = base_url + author + '/answers'
     page = 1
     while not drained:
-        print 'get page: ' + str(page)
+        print author + '\'s answer get page: ' + str(page)
         params = {
             'page': page
         }
         try:
             response =requests.get(url, headers=headers, params=params, timeout=15)
         except:
-            print('anti spider, wait for ' + str(us_retry_wait) + ' seconds and try again')
+            print('network error, wait for ' + str(us_retry_wait) + ' seconds and try again')
             time.sleep(us_retry_wait)
             continue
         dict_json = _html_to_json(response.text)
@@ -96,14 +96,14 @@ def get_collection_list_by_author(author, cookie):
     url = base_url + author + '/collections'
     page = 1
     while not drained:
-        print 'get page: ' + str(page)
+        print 'get ' + author + '\'s collection page: ' + str(page)
         params = {
             'page': page
         }
         try:
             response =requests.get(url, headers=headers, params=params)
         except:
-            print('anti spider, wait for ' + str(us_retry_wait) + ' seconds and try again')
+            print('network error, wait for ' + str(us_retry_wait) + ' seconds and try again')
             time.sleep(us_retry_wait)
             continue
         dict_json = _html_to_json(response.text)
@@ -134,7 +134,7 @@ def get_answers_by_collection(c_id, cookie):
     url = base_url + c_id + '/items'
     offset = 0
     while not drained:
-        print 'get answers from: ' + str(offset)
+        print 'get ' + collection + ' answers from: ' + str(offset)
         params = {
             'offset': offset,
             'limit': 20,
@@ -143,7 +143,7 @@ def get_answers_by_collection(c_id, cookie):
         try:
             response =requests.get(url, headers=headers, params=params)
         except:
-            print('anti spider, wait for ' + str(us_retry_wait) + ' seconds and try again')
+            print('network error, wait for ' + str(us_retry_wait) + ' seconds and try again')
             time.sleep(us_retry_wait)
             continue
         dict_json = json.loads(response.text)

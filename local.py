@@ -1,10 +1,6 @@
 import os
 import time
-import requests
-import json
 import sys
-import random
-import pprint
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -72,7 +68,7 @@ for a in author_list:
 
 timestamp_end = int(time.time())
 duration = timestamp_end - timestamp
-print 'time spend: ' + str(duration)
+print 'time spend: ' + str(duration) + 's'
 
 #create a zip file
 #generate pdf file
