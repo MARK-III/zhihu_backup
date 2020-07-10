@@ -39,7 +39,7 @@ class Zhihu():
             self.meta['followees'][a['id']] = a
         author_dir = os.path.join(self.archive_dir, a['id'])
         if not os.path.exists(author_dir):
-            os.makedir(author_dir)
+            os.mkdir(author_dir)
         self._save()
     
     def timestamp(self):
@@ -77,6 +77,7 @@ class Author():
             self.meta = {}
             self.meta['answers'] = {}
             self.meta['author_id'] = self.id
+            self.meta['timestamp'] = int(time.time())
     
     def timestamp(self):
         return self.meta['timestamp']
@@ -154,6 +155,7 @@ class Author_C():
             self.meta = {}
             self.meta['author_id'] = self.id
             self.meta['collections'] = {}
+            self.meta['timestamp'] = int(time.time())
     
     def collection_list(self):
         l = []
@@ -233,7 +235,7 @@ class Collection():
         answer_file = os.path.join(self.archive_dir, self.author_id, 'collections', self.id, str(answer_id) + '.txt')
         if os.path.exists(answer_file):
             timestamp = int(time.time())
-            archive_file = os.path.join(self.archive_dir, self.id, 'answer', answer_id + '.txt.' + str(timestamp))
+            archive_file = os.path.join(answer_file + '.' + str(timestamp))
             os.rename(answer_file, archive_file)
         with open(answer_file, 'w') as f:
             f.write(text)

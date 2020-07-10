@@ -30,6 +30,7 @@ def people_answer_index(people):
 
 @app.route('/people/<people>/answer/<answer_id>')
 def people_answer_page(people, answer_id):
+
     answer_file = os.path.join(archive_dir, people, 'answer', answer_id + '.txt')
     with open(answer_file) as f:
         answer = f.read()
