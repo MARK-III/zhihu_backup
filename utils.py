@@ -134,7 +134,7 @@ def get_answers_by_collection(c_id, cookie):
     url = base_url + c_id + '/items'
     offset = 0
     while not drained:
-        print 'get ' + collection + ' answers from: ' + str(offset)
+        print 'get ' + str(c_id) + ' answers from: ' + str(offset)
         params = {
             'offset': offset,
             'limit': 20,
