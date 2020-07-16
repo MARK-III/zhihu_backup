@@ -45,9 +45,6 @@ class Zhihu():
         if not os.path.exists(author_dir):
             os.mkdir(author_dir)
         self._save()
-    
-    def timestamp(self):
-        return self.meta['timestamp']
 
     def _save(self):
         self.meta['timestamp'] = int(time.time())
