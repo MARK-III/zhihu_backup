@@ -42,13 +42,15 @@ class Zhihu():
         if a['gender'] >= 0:
             self.meta['followees'][a['id']] = a
         author_dir = os.path.join(self.archive_dir, a['id'])
-        if not os.path.exists(author_dir):int(time.time())
+        if not os.path.exists(author_dir):
             os.mkdir(author_dir)
         self._save()
+    
+    def timestamp(self):
+        return self.meta['timestamp']
 
     def _save(self):
-        timestamp = int(time.time())
-        self.meta['timestamp'] = timestamp
+        self.meta['timestamp'] = int(time.time())
         with open(self.json_file, 'w') as f:
             f.write(json.dumps(self.meta))
         
