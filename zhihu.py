@@ -21,6 +21,7 @@ class Zhihu():
             self.meta['timestamp'] = int(time.time())
             self.meta['author_id'] = 'xjq314'
             self.meta['followees'] = dict()
+        self.timestamp = self.meta['timestamp']
 
     def followee_list(self):
         l = []
@@ -41,12 +42,9 @@ class Zhihu():
         if a['gender'] >= 0:
             self.meta['followees'][a['id']] = a
         author_dir = os.path.join(self.archive_dir, a['id'])
-        if not os.path.exists(author_dir):
+        if not os.path.exists(author_dir):int(time.time())
             os.mkdir(author_dir)
         self._save()
-    
-    def timestamp(self):
-        return self.meta['timestamp']
 
     def _save(self):
         timestamp = int(time.time())

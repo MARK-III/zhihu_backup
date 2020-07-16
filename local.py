@@ -22,7 +22,7 @@ timestamp = int(time.time())
 #sync following list
 
 zhihu = Zhihu(archive_dir)
-if timestamp - zhihu.timestamp() > update_interval:
+if timestamp - zhihu.timestamp > update_interval:
     l = utils.get_follow_by_author(me, cookie)
     for a in l:
         zhihu.update(a)
