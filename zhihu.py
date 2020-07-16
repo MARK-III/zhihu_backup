@@ -18,11 +18,14 @@ class Zhihu():
                 self.meta = json.loads(f.read())
         else:
             self.meta = {}
+            self.meta['timestamp'] = int(time.time())
+            self.meta['author_id'] = 'xjq314'
+            self.meta['followees'] = dict()
 
     def followee_list(self):
         l = []
-        for i in self.meta['followees'].keys():
-            l.append(i)
+        for key in self.meta['followees'].keys():
+            l.append(key)
         return(l)
     
     def followee_list_for_frontend(self):
@@ -52,14 +55,7 @@ class Zhihu():
             f.write(json.dumps(self.meta))
         
     def checksum(self):
-        for i in self.meta['followees'].keys():
-            followee_dir = os.path.join(self.archive_dir, i)
-            if not os.path.exists(followee_dir):
-                print 'dir miss: ' + i
-        for f in os.listdir(self.archive_dir):
-            if f != 'index.json':
-                if not f in self.meta['followees'].keys():
-                    print 'meta miss: ' + f
+        pass
 
 class Author():
 
