@@ -34,7 +34,7 @@ class Zhihu():
         for i in self.meta['followees'].keys():
             d = self.meta['followees'][i]
             d['answer_url'] = '/people/' + i + '/answer'
-            d['collection_url'] = '/people' + i + '/collecion'
+            d['collection_url'] = '/people/' + i + '/collection'
             l.append(d)
         return(l)
     

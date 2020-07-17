@@ -36,7 +36,7 @@ def people_answer_page(people, answer_id):
         answer = f.read()
     return answer
 
-@app.route('/<people>/collection')
+@app.route('/people/<people>/collection')
 def people_collection_index(people):
     index_file = os.path.join(archive_dir, people, 'collections', 'index.json')
     with open(index_file) as f:
