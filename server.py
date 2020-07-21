@@ -18,7 +18,7 @@ archive_dir = 'archive'
 @app.route('/')
 def index():
     title = 'zhihu_archive'
-    zhihu = Zhihu(archive_dir)  
+    zhihu = User(archive_dir)  
     followee_list = zhihu.followee_list_for_frontend()
     return render_template('index.html', title=title, list=followee_list)
 

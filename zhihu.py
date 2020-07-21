@@ -6,9 +6,9 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 
-class Zhihu():
+class User():
 
-    def __init__(self, archive_dir):
+    def __init__(self, archive_dir, me):
         self.archive_dir = archive_dir
         if not os.path.exists(archive_dir):
             os.mkdir(self.archive_dir)
@@ -19,7 +19,7 @@ class Zhihu():
         else:
             self.meta = {}
             self.meta['timestamp'] = int(time.time())
-            self.meta['author_id'] = 'xjq314'
+            self.meta['author_id'] = me
             self.meta['followees'] = dict()
         self.timestamp = self.meta['timestamp']
 
@@ -260,4 +260,3 @@ class Collection():
                 print self.id
                 print ff
                 self._rebuild_meta(ff)
-                

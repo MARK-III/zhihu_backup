@@ -27,7 +27,8 @@ def get_follow_by_author(author, cookie):
         params = {
             'offset': offset,
             'limit': 20,
-            'include': 'data[*].answer_count,articles_count,gender,follower_count,is_followed,is_following,badge[?(type=best_answerer)].topics'
+            #'include': 'data[*].answer_count,articles_count,gender,follower_count,is_followed,is_following,badge[?(type=best_answerer)].topics'
+            'include': 'data%5B*%5D.answer_count%2Carticles_count%2Cgender%2Cfollower_count%2Cis_followed%2Cis_following%2Cbadge%5B%3F(type%3Dbest_answerer)%5D.topics'
             }
         try:
             response =requests.get(url, headers=headers, params=params)
@@ -36,6 +37,7 @@ def get_follow_by_author(author, cookie):
             time.sleep(us_retry_wait)
             continue
         dict_json = json.loads(response.text)
+        print response.text.decode('unicode-escape')
         drained = dict_json['paging']['is_end']   
         for f in dict_json['data']:
             a = {
@@ -46,6 +48,41 @@ def get_follow_by_author(author, cookie):
             }
             result.append(a)
         offset = offset + 20
+        time.sleep(us_request_wait)
+    print 'total followees: ' + str(len(result))
+    return result
+
+def get_follow_by_author2(author, cookie):
+    result = []
+    print 'get all follow of: ' + author
+    headers = _header(cookie)
+    drained = False
+    base_url = 'https://zhihu.com/people/'
+    url = base_url + author + '/following'
+    page = 1
+    while not drained:
+        print 'get ' + author + '\'s followee page: ' + str(page)
+        params = {
+            'page': page
+            }
+        try:
+            response =requests.get(url, headers=headers, params=params)
+        except:
+            print('network error, wait for ' + str(us_retry_wait) + ' seconds and try again')
+            time.sleep(us_retry_wait)
+            continue
+        dict_json = _html_to_json(response.text)
+        drained = dict_json['initialState']['people']['followingByUser'][author]['isDrained']
+        following_dict = dict_json['initialState']['entities']['users'] 
+        for key in following_dict:
+            a = {
+                'uuid': following_dict[key]['id'],
+                'name': following_dict[key]['name'],
+                'id': key,
+                'gender': following_dict[key]['gender']
+            }
+            result.append(a)
+        page = page + 1
         time.sleep(us_request_wait)
     print 'total followees: ' + str(len(result))
     return result
