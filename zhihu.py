@@ -132,7 +132,7 @@ class Author():
             if not ff in self.meta['answers'].keys() and ff != 'index.json':
                 print 'meta miss: ' + ff
 
-class Author_C():
+class Author_Collection():
 
     def __init__(self, archive_dir, author_id):
         self.id = author_id

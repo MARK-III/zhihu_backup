@@ -42,7 +42,7 @@ for a in author_list:
         print 'no need to update'
 
 for a in author_list:
-    author = Author_C(archive_dir, a)
+    author = Author_Collection(archive_dir, a)
     print author.id
     if timestamp - author.timestamp() > update_interval:
         l = utils.get_collection_list_by_author(a, cookie)
@@ -52,7 +52,7 @@ for a in author_list:
         print 'no need to update'
 
 for a in author_list:
-    author = Author_C(archive_dir, a)
+    author = Author_Collection(archive_dir, a)
     print author.id
     collection_list = author.collection_list()
     for c in collection_list:
