@@ -203,6 +203,8 @@ class Collection():
             self.meta['answers'] = {}
             self.meta['timestamp'] = 0
             self.meta['url'] = ''
+        if not 'timestamp' in self.meta.keys():
+            self.meta['timestamp'] = 0
     
     def update(self, a):
         if not a['id'] in self.meta['answers'].keys():
