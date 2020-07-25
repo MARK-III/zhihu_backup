@@ -92,7 +92,7 @@ class Author():
         if not a['id'] in self.meta['answers'].keys():
             print 'new answer:'
             print a['title']
-            print a['contents']
+            print a['contents'].decode('unicode-escape')
             self._update_answer_file(a['id'], a['contents'])
             del a['contents']
             self.meta['answers'][a['id']] = a
@@ -101,7 +101,7 @@ class Author():
         if a['updatedTime'] > self.meta['answers'][a['id']]['updatedTime']:
             print 'update answer:'
             print a['title']
-            print a['contents']
+            print a['contents'].decode('unicode-escape')
             self._update_answer_file(a['id'], a['contents'])
             del a['contents']
             self.meta['answers'][a['id']] = a
@@ -205,6 +205,7 @@ class Collection():
         if not a['id'] in self.meta['answers'].keys():
             print 'new answer:'
             print a['title']
+            print a['contents'].decode('unicode-escape')
             self._update_answer_file(a['id'], a['content'])
             del a['content']
             self.meta['answers'][a['id']] = a
@@ -214,6 +215,7 @@ class Collection():
         if a['updatedTime'] > self.meta['answers'][a['id']]['updatedTime']:
             print 'update answer:'
             print a['title']
+            print a['contents'].decode('unicode-escape')
             self._update_answer_file(a['id'], a['contents'])
             del a['contents']
             self.meta['answers'][a['id']] = a
