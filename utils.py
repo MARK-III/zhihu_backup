@@ -211,6 +211,44 @@ def get_answers_by_collection(c_id, cookie):
         time.sleep(us_request_wait)
     print 'total answers: ' + str(len(result))
     return result
+
+def get_following_collection_list_by_author2(author, cookie):
+    print 'get all following collections of: ' + author
+    headers = _header(cookie)
+    result = []
+    drained = False
+    base_url = 'https://zhihu.com/people/'
+    url = base_url + author + '/following/collections'
+    page = 1
+    while not drained:
+        print 'get ' + author + '\'s following collection page: ' + str(page)
+        params = {
+            'page': page
+        }
+        try:
+            response =requests.get(url, headers=headers, params=params)
+        except:
+            print('network error, wait for ' + str(us_retry_wait) + ' seconds and try again')
+            time.sleep(us_retry_wait)
+            continue
+        dict_json = _html_to_json(response.text)
+        drained = dict_json['initialState']['people']['followingFavlistsByUser'][author]['isDrained']
+        total = dict_json['initialState']['people']['followingFavlistsByUser'][author]['totals']
+        flavor_list = dict_json['initialState']['entities']['favlists']
+        for id in flavor_list:
+            d = {
+                'id' : id,
+                'answerCount' : flavor_list[id]['answerCount'],
+                'title' : flavor_list[id]['title'],
+                'createdTime' : flavor_list[id]['createdTime'],
+                'updatedTime' : flavor_list[id]['updatedTime']
+            }
+            result.append(d)
+        if len(result) >= total:
+            drained = True
+        page = page + 1
+        time.sleep(us_request_wait)
+    return result
     
 def _html_to_json(html):
     #extract json from html working from 2020.06.28
