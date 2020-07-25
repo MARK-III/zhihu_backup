@@ -19,7 +19,7 @@ class User():
         else:
             self.meta = {}
             self.meta['timestamp'] = int(time.time())
-            self.meta['author_id'] = me
+            self.meta['id'] = me
             self.meta['followees'] = dict()
         self.timestamp = self.meta['timestamp']
 
@@ -76,8 +76,7 @@ class Author():
         return self.meta['timestamp']
         
     def _save(self):
-        timestamp = int(time.time())
-        self.meta['timestamp'] = timestamp
+        self.meta['timestamp'] = int(time.time())
         with open(self.json_file, 'w') as f:
             f.write(json.dumps(self.meta))
     
@@ -158,17 +157,16 @@ class Author_Collection():
     
     def update(self, a):
         self.meta['collections'][a['id']] = a
-        collection_dir = os.path.join(self.archive_dir, self.id, 'collections', a['id'])
-        if not os.path.exists(collection_dir):
-            os.mkdir(collection_dir)
+        #collection_dir = os.path.join(self.archive_dir, self.id, 'collections', a['id'])
+        #if not os.path.exists(collection_dir):
+        #    os.mkdir(collection_dir)
         self._save()
     
     def timestamp(self):
         return self.meta['timestamp']
         
     def _save(self):
-        timestamp = int(time.time())
-        self.meta['timestamp'] = timestamp
+        self.meta['timestamp'] = int(time.time())
         with open(self.json_file, 'w') as f:
             f.write(json.dumps(self.meta))
 

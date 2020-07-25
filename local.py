@@ -12,7 +12,7 @@ archive_dir = 'archive'
 cookie = '_zap=5fd22f92-8453-45b2-b8db-d6f3ae718f6a; d_c0="AADR_D8adBGPTpAp4CCVjA4Q9--O9081LMk=|1592629285"; Hm_lvt_98beee57fd2ef70ccdd5ca52b9740c49=1592630061,1592722829,1592730289,1593011286; _ga=GA1.2.186257978.1592629287; _xsrf=14YsIRPYeljzGOsTnokyWc2BcICFLs85; z_c0="2|1:0|10:1592630071|4:z_c0|92:Mi4xZUcwaUFBQUFBQUFBQU5IOFB4cDBFU1lBQUFCZ0FsVk5OLW5hWHdBZDJXTXlER3RrU2JvLVV1SzAtdGZES21xdFBB|2c27981f90899318a98ca8dd6ed20d7f05495d32115d93058f04d72ea65af277"; tst=r; q_c1=aff8d03f0efd4f459c3642aa4c8cca45|1593852517000|1593852517000; KLBRSID=fb3eda1aa35a9ed9f88f346a7a3ebe83|1595352814|1595352808; SESSIONID=x5GHL5yYlaXaN6GQxcuWNlnblRhXEyjAaiMWllFIKhM; JOID=U1wdBk743XGk7cmpS_yc4igWjSJTheQ77KX53B-QuSXIo_vrFh36a__swKhGH4SY3sAA6NOa7zUzyT5hZDjkOW4=; osd=UF4cAkz733Cg78qrSvie4SoXiSBQh-U_7qb73RuSuifJp_noFBz-afzuwaxEHIaZ2sID6tKe7TYxyDpjZzrlPWw='
 
 #update_interval in days
-update = 3
+update = 7
 update_interval = 86400 * update
 
 print 'zhihu archive start ...'
@@ -28,6 +28,35 @@ if timestamp - zhihu.timestamp > update_interval:
         zhihu.update(a)
 else:
     print 'no need to update'
+
+print 'get my answers'
+author = Author(archive_dir, me)
+if timestamp == author.timestamp() > update_interval:
+    l = utils.get_answers_by_author(me, cookie)
+    for answer in l:
+        author.update(answer)
+    author._save()
+print 'get my collections'
+author = Author_Collection(archive_dir, me)
+if timestamp - author.timestamp() > update_interval:
+    l = utils.get_collection_list_by_author(a, cookie)
+    for collection in l:
+        author.update(collection)
+else:
+    print 'no need to update'
+collection_list = author.collection_list()
+for c in collection_list:
+    collection = Collection(archive_dir, me, c)
+    if timestamp - collection.timestamp() > update_interval:
+        l = utils.get_answers_by_collection(c, cookie)
+        for answer in l:
+            collection.update(answer)
+        if len(l) == 0:
+            collection._save()
+    else:
+        print 'no need to update'
+
+print 'get my follow_collections'
 
 author_list = zhihu.followee_list()
 for a in author_list:
