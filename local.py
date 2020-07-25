@@ -19,7 +19,7 @@ print 'zhihu archive start ...'
 
 timestamp = int(time.time())
 
-#sync following list
+print 'sync following list'
 
 zhihu = User(archive_dir, me)
 if timestamp - zhihu.timestamp > update_interval:
@@ -36,6 +36,9 @@ if timestamp == author.timestamp() > update_interval:
     for answer in l:
         author.update(answer)
     author._save()
+else:
+    print 'no need to update'
+    
 print 'get my collections'
 author = Author_Collection(archive_dir, me)
 if timestamp - author.timestamp() > update_interval:
@@ -57,6 +60,24 @@ for c in collection_list:
         print 'no need to update'
 
 print 'get my follow_collections'
+author = Author_Following_Collection(archive_dir, me)
+if timestamp - author.timestamp() > update_interval:
+    l = utils.get_following_collection_list_by_author2(me, cookie)
+    for collection in l:
+        author.update(collection)
+else:
+    print 'no need to update'
+collection_list = author.collection_list()
+for c in collection_list:
+    collection = Collection(archive_dir, me, c)
+    if timestamp - collection.timestamp() > update_interval:
+        l = utils.get_answers_by_collection(c, cookie)
+        for answer in l:
+            collection.update(answer)
+        if len(l) == 0:
+            collection._save()
+    else:
+            print 'no need to update'
 
 author_list = zhihu.followee_list()
 for a in author_list:
@@ -69,7 +90,7 @@ for a in author_list:
         author._save()
     else:
         print 'no need to update'
-
+'''
 for a in author_list:
     author = Author_Collection(archive_dir, a)
     print author.id
@@ -94,6 +115,7 @@ for a in author_list:
                 collection._save()
         else:
             print 'no need to update'
+'''
 
 timestamp_end = int(time.time())
 duration = timestamp_end - timestamp

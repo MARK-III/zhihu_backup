@@ -157,9 +157,6 @@ class Author_Collection():
     
     def update(self, a):
         self.meta['collections'][a['id']] = a
-        #collection_dir = os.path.join(self.archive_dir, self.id, 'collections', a['id'])
-        #if not os.path.exists(collection_dir):
-        #    os.mkdir(collection_dir)
         self._save()
     
     def timestamp(self):
@@ -260,3 +257,39 @@ class Collection():
                 print self.id
                 print ff
                 self._rebuild_meta(ff)
+
+class Author_Following_Collection():
+
+    def __init__(self, archive_dir, author_id):
+        self.id = author_id
+        self.archive_dir = archive_dir
+        self.json_file = os.path.join(archive_dir, author_id, 'following_collections', 'index.json')
+        if os.path.exists(self.json_file):
+            with open(self.json_file) as f:
+                self.meta = json.loads(f.read())
+        else:
+            collections_dir = os.path.join(archive_dir, author_id, 'following_collections')
+            if not os.path.exists(collections_dir):
+                os.mkdir(collections_dir)
+            self.meta = {}
+            self.meta['author_id'] = self.id
+            self.meta['collections'] = {}
+            self.meta['timestamp'] = 0
+    
+    def collection_list(self):
+        l = []
+        for c in self.meta['collections'].keys():
+            l.append(c)
+        return l
+    
+    def update(self, a):
+        self.meta['collections'][a['id']] = a
+        self._save()
+    
+    def timestamp(self):
+        return self.meta['timestamp']
+        
+    def _save(self):
+        self.meta['timestamp'] = int(time.time())
+        with open(self.json_file, 'w') as f:
+            f.write(json.dumps(self.meta))
